@@ -28,17 +28,44 @@ jobs:
           java-version: '21'
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
-        with:
-          accept-android-sdk-licenses: true
-          log-accepted-android-sdk-licenses: true
-          packages: |
-            platform-tools
-            platforms;android-36.1
-            build-tools;36.0.0
+        run: |
+          set -euo pipefail
+          SDK_ROOT="$HOME/android-sdk"
+          rm -rf "$SDK_ROOT/cmdline-tools"
+          mkdir -p "$SDK_ROOT/cmdline-tools"
 
-      - name: Accept Android SDK Licenses
-        run: yes | sdkmanager --licenses > /dev/null || true
+          LATEST_ZIP=$(curl -fsSL https://developer.android.com/studio \
+            | grep -oE 'commandlinetools-linux-[0-9]+_latest\.zip' \
+            | sort -V | tail -n 1 || true)
+          if [ -z "$LATEST_ZIP" ]; then
+            LATEST_ZIP=$(curl -fsSL https://dl.google.com/android/repository/repository2-1.xml \
+              | grep -oE 'commandlinetools-linux-[0-9]+_latest\.zip' \
+              | sort -V | tail -n 1 || true)
+          fi
+          if [ -z "$LATEST_ZIP" ]; then
+            LATEST_ZIP="commandlinetools-linux-13114758_latest.zip"
+          fi
+
+          echo "Installing Android command-line tools: $LATEST_ZIP"
+          curl -fsSL "https://dl.google.com/android/repository/${LATEST_ZIP}" -o /tmp/cmdline-tools.zip
+          unzip -q /tmp/cmdline-tools.zip -d "$SDK_ROOT/cmdline-tools"
+          mv "$SDK_ROOT/cmdline-tools/cmdline-tools" "$SDK_ROOT/cmdline-tools/latest"
+          rm -f /tmp/cmdline-tools.zip
+
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          chmod +x "$SDKMANAGER"
+
+          { yes || true; } | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses > /dev/null
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0"
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" --install "platforms;android-36.1" || true
+
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "ANDROID_SDK_ROOT=$SDK_ROOT" >> "$GITHUB_ENV"
+          echo "$SDK_ROOT/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          echo "$SDK_ROOT/platform-tools" >> "$GITHUB_PATH"
 
       - name: Prepare Debug Keystore
         run: |
