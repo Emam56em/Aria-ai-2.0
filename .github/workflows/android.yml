@@ -29,6 +29,14 @@ jobs:
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          packages: |
+            platform-tools
+            platforms;android-36.1
+            build-tools;36.0.0
+
+      - name: Accept Android SDK Licenses
+        run: yes | sdkmanager --licenses > /dev/null || true
 
       - name: Prepare Debug Keystore
         run: |
