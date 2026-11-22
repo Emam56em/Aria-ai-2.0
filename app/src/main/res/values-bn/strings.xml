@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">Aria AI 2.0</string>
+    <string name="aria_logo_desc">আরিয়া এআই ২.০ লোগো</string>
+    <string name="action_new_chat">নতুন চ্যাট</string>
+    <string name="action_settings">সেটিংস</string>
+    <string name="action_controls">ফোন কন্ট্রোল</string>
+    <string name="action_send">বার্তা পাঠান</string>
+    <string name="action_mic">ভয়েস ইনপুট</string>
+    <string name="accessibility_service_label">আরিয়া এআই ২.০ অ্যাসিস্ট্যান্ট</string>
+    <string name="accessibility_service_description">ঐচ্ছিক সেবা—আপনি যখন স্পষ্টভাবে অনুমতি ও নির্দেশ দেবেন তখনই আরিয়া এআই ২.০ ব্যাক, হোম বা স্ক্রিন অ্যাকশন চালাতে পারবে। এটি ডিফল্টভাবে বন্ধ থাকে এবং পাসওয়ার্ড ফিল্ড পড়ে না।</string>
+    <string name="voice_channel_name">আরিয়া অলওয়েজ-অন ভয়েস অ্যাসিস্ট্যান্ট</string>
+    <string name="voice_channel_description">আরিয়া যখন আপনার ওয়েক ওয়ার্ডের জন্য মাইক্রোফোন শুনছে তখন এটি প্রদর্শিত হয়।</string>
+    <string name="voice_notif_listening_title">আরিয়া শুনছে: "%1$s"</string>
+    <string name="voice_notif_paused_title">আরিয়া ভয়েস মনিটরিং বিরতিতে আছে</string>
+    <string name="voice_notif_interrupted_title">মাইক্রোফোন সাময়িকভাবে ব্যস্ত</string>
+    <string name="voice_notif_active_turn_title">আরিয়া আপনার অনুরোধ প্রক্রিয়া করছে</string>
+    <string name="voice_notif_pause">বিরতি</string>
+    <string name="voice_notif_resume">চালু করুন</string>
+    <string name="voice_notif_stop">শোনা বন্ধ করুন</string>
+</resources>
