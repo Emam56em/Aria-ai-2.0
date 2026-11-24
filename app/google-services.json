@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "276466807167",
+    "project_id": "sharp-bivouac-458215-i1",
+    "storage_bucket": "sharp-bivouac-458215-i1.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276466807167:android:b4d28829e24c50d59fea4a",
+        "android_client_info": {
+          "package_name": "com.aistudio.ariaai.vqmxtr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBvWwAKVmzmF4OQKy0_KMWv1Ut3VXjP7hk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
