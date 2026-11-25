@@ -12,16 +12,19 @@ private const val RECAPTCHA_SITE_KEY_RES = "recaptcha_site_key"
 /**
  * Configures Firebase App Check without making attestation setup a fatal app-startup dependency.
  *
- * If the provider or site-key configuration is unavailable, Aria should still open so the user
- * can access the UI and receive a recoverable error when a protected Firebase feature is used.
+ * Firebase's Google Services plugin generates the Firebase options from app/google-services.json.
+ * If those options are missing, report a clear configuration error rather than allowing the app to
+ * continue until the first Firebase AI request fails with "Default FirebaseApp is not initialized".
  */
 fun configureAppCheck(context: Context): Boolean {
     return try {
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            FirebaseApp.initializeApp(context)
-        }
+        val firebaseApp = FirebaseApp.getApps(context).firstOrNull()
+            ?: FirebaseApp.initializeApp(context)
+            ?: error(
+                "Default FirebaseApp could not be initialized. " +
+                    "Check app/google-services.json and its Android package name."
+            )
 
-        val firebaseApp = FirebaseApp.getInstance()
         val resourceId = context.resources.getIdentifier(
             RECAPTCHA_SITE_KEY_RES,
             "string",
@@ -48,7 +51,7 @@ fun configureAppCheck(context: Context): Boolean {
         true
     } catch (error: Exception) {
         // Never crash the whole application because App Check setup failed.
-        Log.e(TAG, "Firebase App Check initialization failed; continuing app startup.", error)
+        Log.e(TAG, "Firebase/App Check initialization failed; continuing app startup.", error)
         false
     }
 }
