@@ -10,14 +10,13 @@ private const val TAG = "AppCheckInit"
 private const val RECAPTCHA_SITE_KEY_RES = "recaptcha_site_key"
 
 /**
- * Installs the same Firebase-supported Android attestation provider in every build variant.
+ * Configures Firebase App Check without making attestation setup a fatal app-startup dependency.
  *
- * Debug builds previously used the Debug provider, which requires a device-specific token to be
- * copied from Logcat and allow-listed manually in Firebase Console. That workflow is unsuitable
- * for this phone-only release process and caused unregistered-token failures.
+ * If the provider or site-key configuration is unavailable, Aria should still open so the user
+ * can access the UI and receive a recoverable error when a protected Firebase feature is used.
  */
-fun configureAppCheck(context: Context) {
-    try {
+fun configureAppCheck(context: Context): Boolean {
+    return try {
         if (FirebaseApp.getApps(context).isEmpty()) {
             FirebaseApp.initializeApp(context)
         }
@@ -46,11 +45,10 @@ fun configureAppCheck(context: Context) {
         }
 
         Log.i(TAG, "Firebase App Check reCAPTCHA Enterprise provider installed.")
+        true
     } catch (error: Exception) {
-        Log.e(TAG, "Firebase App Check initialization failed.", error)
-        throw IllegalStateException(
-            "Aria could not initialize Firebase App Check. Check Firebase app registration and reCAPTCHA Enterprise configuration.",
-            error
-        )
+        // Never crash the whole application because App Check setup failed.
+        Log.e(TAG, "Firebase App Check initialization failed; continuing app startup.", error)
+        false
     }
 }
