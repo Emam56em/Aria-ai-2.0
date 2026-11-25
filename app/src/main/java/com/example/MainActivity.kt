@@ -43,8 +43,8 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // STEP 1: Configure Firebase App Check with launch intent before any UI or ViewModels.
-        configureAppCheck(this, intent)
+        // Install Firebase App Check before any Firebase AI SDK is accessed.
+        configureAppCheck(this)
 
         // STEP 2: Enable dark-mode edge-to-edge display.
         enableEdgeToEdge(

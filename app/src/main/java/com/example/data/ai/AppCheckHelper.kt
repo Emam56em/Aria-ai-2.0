@@ -1,70 +1,56 @@
 package com.example.data.ai
 
 import android.content.Context
-import android.content.Intent
 import android.util.Log
-import com.example.BuildConfig
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
 import com.google.firebase.appcheck.recaptcha.RecaptchaAppCheckProviderFactory
 
 private const val TAG = "AppCheckInit"
-
-private const val DEBUG_TOKEN_EXTRA = "FIREBASE_APPCHECK_DEBUG_TOKEN"
-private const val DEBUG_STORE_PREFIX = "com.google.firebase.appcheck.debug.store."
-private const val DEBUG_SECRET_KEY = "com.google.firebase.appcheck.debug.DEBUG_SECRET"
 private const val RECAPTCHA_SITE_KEY_RES = "recaptcha_site_key"
 
-fun configureAppCheck(context: Context, intent: Intent?) {
+/**
+ * Installs the same Firebase-supported Android attestation provider in every build variant.
+ *
+ * Debug builds previously used the Debug provider, which requires a device-specific token to be
+ * copied from Logcat and allow-listed manually in Firebase Console. That workflow is unsuitable
+ * for this phone-only release process and caused unregistered-token failures.
+ */
+fun configureAppCheck(context: Context) {
     try {
         if (FirebaseApp.getApps(context).isEmpty()) {
             FirebaseApp.initializeApp(context)
         }
 
-        if (BuildConfig.DEBUG) {
-            val debugToken = intent?.getStringExtra(DEBUG_TOKEN_EXTRA)
+        val firebaseApp = FirebaseApp.getInstance()
+        val resourceId = context.resources.getIdentifier(
+            RECAPTCHA_SITE_KEY_RES,
+            "string",
+            context.packageName
+        )
 
-            if (!debugToken.isNullOrEmpty()) {
-                val persistenceKey = FirebaseApp.getInstance().persistenceKey
-                val prefs = context.getSharedPreferences(
-                    "$DEBUG_STORE_PREFIX$persistenceKey",
-                    Context.MODE_PRIVATE
-                )
-                // Synchronous commit() ensures the debug secret is persisted before provider init.
-                prefs.edit()
-                    .putString(DEBUG_SECRET_KEY, debugToken)
-                    .commit()
-                Log.d(TAG, "App Check debug secret configured successfully.")
-            } else {
-                Log.w(TAG, "No debug token found in Intent extra.")
-            }
-
-            FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
-                DebugAppCheckProviderFactory.getInstance()
-            )
-            Log.d(TAG, "DebugAppCheckProviderFactory installed.")
-        } else {
-            val resId = context.resources.getIdentifier(
-                RECAPTCHA_SITE_KEY_RES,
-                "string",
-                context.packageName
-            )
-            if (resId != 0) {
-                val siteKey = context.getString(resId)
-                if (siteKey.isNotBlank()) {
-                    FirebaseAppCheck.getInstance().installAppCheckProviderFactory(
-                        RecaptchaAppCheckProviderFactory.getInstance(siteKey)
-                    )
-                    Log.d(TAG, "RecaptchaAppCheckProviderFactory installed.")
-                } else {
-                    Log.e(TAG, "recaptcha_site_key resource string is blank.")
-                }
-            } else {
-                Log.e(TAG, "recaptcha_site_key string resource not found in package.")
-            }
+        check(resourceId != 0) {
+            "Firebase App Check reCAPTCHA site key resource is missing."
         }
-    } catch (e: Exception) {
-        Log.e(TAG, "Failed to initialize Firebase App Check", e)
+
+        val siteKey = context.getString(resourceId).trim()
+        check(siteKey.isNotEmpty()) {
+            "Firebase App Check reCAPTCHA site key resource is blank."
+        }
+
+        FirebaseAppCheck.getInstance(firebaseApp).apply {
+            installAppCheckProviderFactory(
+                RecaptchaAppCheckProviderFactory.getInstance(siteKey)
+            )
+            setTokenAutoRefreshEnabled(true)
+        }
+
+        Log.i(TAG, "Firebase App Check reCAPTCHA Enterprise provider installed.")
+    } catch (error: Exception) {
+        Log.e(TAG, "Firebase App Check initialization failed.", error)
+        throw IllegalStateException(
+            "Aria could not initialize Firebase App Check. Check Firebase app registration and reCAPTCHA Enterprise configuration.",
+            error
+        )
     }
 }
