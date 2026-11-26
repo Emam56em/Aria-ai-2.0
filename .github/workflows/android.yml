@@ -41,7 +41,7 @@ jobs:
               value = base64.b64decode(value, validate=True).decode("utf-8")
               json.loads(value)
 
-          Path("app/google-services.json").write_text(value + "\\n", encoding="utf-8")
+          Path("app/google-services.json").write_text(value + "\n", encoding="utf-8")
           PY
           fi
 
@@ -64,11 +64,11 @@ jobs:
           mkdir -p "$SDK_ROOT/cmdline-tools"
 
           LATEST_ZIP=$(curl -fsSL https://developer.android.com/studio \
-            | grep -oE 'commandlinetools-linux-[0-9]+_latest\\.zip' \
+            | grep -oE 'commandlinetools-linux-[0-9]+_latest\.zip' \
             | sort -V | tail -n 1 || true)
           if [ -z "$LATEST_ZIP" ]; then
             LATEST_ZIP=$(curl -fsSL https://dl.google.com/android/repository/repository2-1.xml \
-              | grep -oE 'commandlinetools-linux-[0-9]+_latest\\.zip' \
+              | grep -oE 'commandlinetools-linux-[0-9]+_latest\.zip' \
               | sort -V | tail -n 1 || true)
           fi
           if [ -z "$LATEST_ZIP" ]; then
