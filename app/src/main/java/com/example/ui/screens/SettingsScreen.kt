@@ -55,11 +55,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.unit.dp
+import com.example.BuildConfig
 import com.example.core.localization.AppLanguage
 import com.example.core.localization.LocalAppStrings
 import com.example.data.ai.GeminiModelOption
+import com.example.data.ai.readDebugAppCheckToken
 import com.example.data.local.UserPreferences
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -77,6 +82,11 @@ fun SettingsScreen(
 ) {
     val strings = LocalAppStrings.current
     val snackbarHostState = remember { SnackbarHostState() }
+    val context = LocalContext.current
+    val clipboardManager = LocalClipboardManager.current
+    var debugAppCheckToken by remember {
+        mutableStateOf(readDebugAppCheckToken(context))
+    }
     var showClearDialog by remember { mutableStateOf(false) }
 
     LaunchedEffect(statusNotice) {
@@ -294,6 +304,56 @@ fun SettingsScreen(
                             Icon(Icons.Outlined.DeleteSweep, contentDescription = null)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text(strings.clearAllHistory)
+                        }
+                    }
+                }
+
+                // Never expose a debug token in release builds.
+                if (BuildConfig.DEBUG) {
+                    item {
+                        SettingsSectionCard(
+                            icon = Icons.Outlined.Shield,
+                            title = "Firebase App Check Debug Token",
+                            subtitle = "Temporary developer-only helper. Keep this token private."
+                        ) {
+                            if (debugAppCheckToken.isNullOrBlank()) {
+                                Text(
+                                    text = "No debug token found yet. Send one test message, return here, and tap Refresh.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            } else {
+                                Text(
+                                    text = debugAppCheckToken.orEmpty(),
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                                Spacer(modifier = Modifier.height(8.dp))
+                                OutlinedButton(
+                                    onClick = {
+                                        clipboardManager.setText(
+                                            AnnotatedString(debugAppCheckToken.orEmpty())
+                                        )
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Copy debug token")
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                            OutlinedButton(
+                                onClick = {
+                                    debugAppCheckToken = readDebugAppCheckToken(context)
+                                },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text("Refresh")
+                            }
+                            Text(
+                                text = "Register it only in Firebase Console > App Check > Manage debug tokens. Never share it or use this debug APK as a public release.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error
+                            )
                         }
                     }
                 }
