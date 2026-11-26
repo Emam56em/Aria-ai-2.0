@@ -101,8 +101,6 @@ dependencies {
   implementation(libs.androidx.room.ktx)
   implementation(libs.androidx.room.runtime)
   implementation(libs.firebase.ai)
-  implementation(libs.firebase.appcheck.debug)
-  implementation(libs.firebase.appcheck.playintegrity)
   implementation(libs.kotlinx.coroutines.android)
   implementation(libs.kotlinx.coroutines.core)
   testImplementation(libs.androidx.compose.ui.test.junit4)
@@ -116,7 +114,9 @@ dependencies {
   androidTestImplementation(libs.androidx.espresso.core)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.runner)
+  debugImplementation(libs.firebase.appcheck.debug)
   debugImplementation(libs.androidx.compose.ui.test.manifest)
   debugImplementation(libs.androidx.compose.ui.tooling)
+  releaseImplementation(libs.firebase.appcheck.playintegrity)
   "ksp"(libs.androidx.room.compiler)
 }
