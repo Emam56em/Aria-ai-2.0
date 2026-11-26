@@ -2,37 +2,27 @@ package com.example.data.ai
 
 import android.content.Context
 import android.util.Log
-import com.example.BuildConfig
 import com.google.firebase.FirebaseApp
 import com.google.firebase.appcheck.FirebaseAppCheck
-import com.google.firebase.appcheck.debug.DebugAppCheckProviderFactory
-import com.google.firebase.appcheck.playintegrity.PlayIntegrityAppCheckProviderFactory
 
 private const val TAG = "AppCheckInit"
 
 /**
- * Installs the appropriate Firebase App Check provider before Firebase AI is accessed.
- * Debug builds use the Debug provider so its token can be registered in Firebase Console.
- * Release builds use Play Integrity for device attestation.
+ * Initializes Firebase and installs the provider compiled for the active build type.
+ * The debug and release provider implementations live in their respective source sets,
+ * so the debug provider is not packaged in release builds.
  */
 fun configureAppCheck(context: Context): Boolean {
     return try {
-        if (FirebaseApp.getApps(context).isEmpty()) {
-            FirebaseApp.initializeApp(context)
-        }
+        val firebaseApp = FirebaseApp.getApps(context).firstOrNull()
+            ?: FirebaseApp.initializeApp(context)
+            ?: error(
+                "Default FirebaseApp could not be initialized. " +
+                    "Check app/google-services.json and its Android package name."
+            )
 
-        val firebaseApp = FirebaseApp.getInstance()
         val appCheck = FirebaseAppCheck.getInstance(firebaseApp)
-
-        val providerFactory = if (BuildConfig.DEBUG) {
-            Log.i(TAG, "Installing Firebase App Check Debug provider.")
-            DebugAppCheckProviderFactory.getInstance()
-        } else {
-            Log.i(TAG, "Installing Firebase App Check Play Integrity provider.")
-            PlayIntegrityAppCheckProviderFactory.getInstance()
-        }
-
-        appCheck.installAppCheckProviderFactory(providerFactory)
+        installBuildSpecificAppCheckProvider(appCheck)
         appCheck.setTokenAutoRefreshEnabled(true)
         true
     } catch (error: Exception) {
